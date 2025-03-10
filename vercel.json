@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "CI=false next build",
+  "buildCommand": "NEXT_LINT_IGNORE_BUILD_ERROR=true next build",
   "devCommand": "next dev",
   "installCommand": "npm install",
   "regions": ["iad1"],
