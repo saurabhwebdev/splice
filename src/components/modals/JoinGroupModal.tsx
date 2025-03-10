@@ -15,20 +15,31 @@ const JoinGroupModal = ({ isOpen, onClose, onJoin }: JoinGroupModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accessCode.trim()) return;
+    const trimmedCode = accessCode.trim();
+    
+    if (!trimmedCode) {
+      setError('Please enter an access code');
+      return;
+    }
 
     setIsLoading(true);
     setError('');
 
     try {
-      await onJoin(accessCode.trim());
+      await onJoin(trimmedCode);
+      setAccessCode('');
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error joining group:', error);
-      setError('Invalid access code or group not found');
+      setError(error?.message || 'Invalid access code or group not found. Please check and try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAccessCode(e.target.value);
+    if (error) setError(''); // Clear error when user starts typing
   };
 
   return (
@@ -39,6 +50,7 @@ const JoinGroupModal = ({ isOpen, onClose, onJoin }: JoinGroupModalProps) => {
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            type="button"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -48,59 +60,48 @@ const JoinGroupModal = ({ isOpen, onClose, onJoin }: JoinGroupModalProps) => {
           {/* Header */}
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Join a Group</h2>
-            <p className="text-sm text-gray-500">
-              Enter the access code shared with you to join an existing group
-            </p>
+            <p className="text-gray-600">Enter the group access code to join</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700 mb-1">
                 Access Code
               </label>
               <input
-                type="text"
                 id="accessCode"
+                type="text"
                 value={accessCode}
-                onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 font-mono text-lg placeholder-gray-400"
+                onChange={handleInputChange}
                 placeholder="Enter access code"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                disabled={isLoading}
                 autoComplete="off"
                 autoFocus
-                maxLength={8}
               />
               {error && (
-                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {error}
-                </p>
+                <p className="mt-2 text-sm text-red-600">{error}</p>
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading || !accessCode.trim()}
-              className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span>Joining...</span>
-                </>
-              ) : (
-                'Join Group'
-              )}
-            </button>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading || !accessCode.trim()}
+              >
+                {isLoading ? 'Joining...' : 'Join Group'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

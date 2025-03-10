@@ -212,17 +212,30 @@ export const updateExpense = async (groupId: string, expenseId: string, expense:
 
 export const getGroupByAccessCode = async (accessCode: string) => {
   try {
-    const q = query(collection(db, 'groups'), where('accessCode', '==', accessCode));
+    // Normalize the access code by trimming and converting to uppercase
+    const normalizedAccessCode = accessCode.trim().toUpperCase();
+    
+    const q = query(collection(db, 'groups'), where('accessCode', '==', normalizedAccessCode));
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
+      console.log('No group found with access code:', normalizedAccessCode);
       return null;
     }
 
     const groupDoc = querySnapshot.docs[0];
+    const groupData = groupDoc.data();
+    
+    // Ensure the group data is valid
+    if (!groupData) {
+      console.error('Group document exists but has no data');
+      return null;
+    }
+
     return {
       id: groupDoc.id,
-      ...groupDoc.data()
+      ...groupData,
+      createdAt: groupData.createdAt?.toDate() || new Date(),
     } as Group;
   } catch (error) {
     console.error('Error getting group by access code:', error);

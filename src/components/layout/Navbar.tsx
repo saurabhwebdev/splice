@@ -21,17 +21,23 @@ const Navbar = () => {
   const handleJoinGroup = async (accessCode: string) => {
     try {
       const group = await getGroupByAccessCode(accessCode);
-      if (group) {
-        // Store the group ID in localStorage
+      if (!group) {
+        throw new Error('Group not found. Please check the access code and try again.');
+      }
+
+      // Store the group ID in localStorage
+      try {
         const accessedGroups = JSON.parse(localStorage.getItem('accessedGroups') || '[]');
         if (!accessedGroups.includes(group.id)) {
           localStorage.setItem('accessedGroups', JSON.stringify([...accessedGroups, group.id]));
         }
-        router.push(`/groups/${group.id}`);
-      } else {
-        throw new Error('Group not found');
+      } catch (storageError) {
+        console.error('Error updating localStorage:', storageError);
+        // Continue even if localStorage fails - it's not critical
       }
-    } catch (error) {
+
+      router.push(`/groups/${group.id}`);
+    } catch (error: any) {
       console.error('Error joining group:', error);
       throw error;
     }
