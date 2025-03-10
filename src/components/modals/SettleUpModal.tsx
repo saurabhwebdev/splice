@@ -111,7 +111,6 @@ const calculateSettlements = (balances: Balance[]): Settlement[] => {
 
 const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps) => {
   const [settlements, setSettlements] = useState<Settlement[]>([]);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   // Calculate initial settlements
   useEffect(() => {

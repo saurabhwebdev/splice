@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Expense, Group } from '@/utils/firebase';
 
 interface ExpenseModalProps {
@@ -17,7 +17,22 @@ const ExpenseModal = ({ isOpen, onClose, onSubmit, group, initialExpense }: Expe
   const [splitType, setSplitType] = useState<'equal' | 'custom'>('equal');
   const [splits, setSplits] = useState<{ participantName: string; amount: number; excluded: boolean; }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
+
+  const updateSplits = useCallback((newAmount?: string) => {
+    const numAmount = Number(newAmount || amount) || 0;
+    const includedParticipants = splits.filter(s => !s.excluded).length || group.participants.length;
+    
+    if (splitType === 'equal' && includedParticipants > 0) {
+      setSplits(
+        group.participants.map(p => ({
+          participantName: `${p.firstName} ${p.lastName}`,
+          amount: splits.find(s => s.participantName === `${p.firstName} ${p.lastName}`)?.excluded ? 0 : 
+            Number((numAmount / includedParticipants).toFixed(2)),
+          excluded: splits.find(s => s.participantName === `${p.firstName} ${p.lastName}`)?.excluded || false
+        }))
+      );
+    }
+  }, [amount, group.participants, splitType, splits]);
 
   useEffect(() => {
     if (isOpen) {
@@ -48,38 +63,20 @@ const ExpenseModal = ({ isOpen, onClose, onSubmit, group, initialExpense }: Expe
         setDate(new Date().toISOString().split('T')[0]);
         setPaidBy(group.participants[0]?.firstName + ' ' + group.participants[0]?.lastName);
         setSplitType('equal');
-        updateSplits();
+        setSplits(group.participants.map(p => ({
+          participantName: `${p.firstName} ${p.lastName}`,
+          amount: 0,
+          excluded: false
+        })));
       }
     }
   }, [isOpen, initialExpense, group.participants]);
-
-  const updateSplits = (newAmount?: string) => {
-    const numAmount = Number(newAmount || amount) || 0;
-    const includedParticipants = group.participants.length;
-    
-    if (splitType === 'equal') {
-      setSplits(
-        group.participants.map(p => ({
-          participantName: `${p.firstName} ${p.lastName}`,
-          amount: splits.find(s => s.participantName === `${p.firstName} ${p.lastName}`)?.excluded ? 0 : 
-            Number((numAmount / includedParticipants).toFixed(2)),
-          excluded: splits.find(s => s.participantName === `${p.firstName} ${p.lastName}`)?.excluded || false
-        }))
-      );
-    }
-  };
 
   useEffect(() => {
     if (amount && splits.length > 0) {
       updateSplits();
     }
   }, [amount, splits, updateSplits]);
-
-  useEffect(() => {
-    if (selectedParticipants.length > 0) {
-      updateSplits();
-    }
-  }, [selectedParticipants, updateSplits]);
 
   const handleAmountChange = (value: string) => {
     setAmount(value);

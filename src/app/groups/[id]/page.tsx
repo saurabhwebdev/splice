@@ -20,17 +20,6 @@ interface Participant {
   lastName: string;
 }
 
-interface Settlement {
-  from: string;
-  to: string;
-  amount: number;
-}
-
-interface Balance {
-  participant: string;
-  amount: number;
-}
-
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -47,13 +36,8 @@ const GroupPage = ({ params }: PageProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [isSettlingUp, setIsSettlingUp] = useState(false);
-  const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [expensesPerPage] = useState(5);
-  const [participants] = useState<Participant[]>([
-    { firstName: 'John', lastName: 'Doe' },
-    { firstName: 'Jane', lastName: 'Smith' },
-  ]);
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
   const [newParticipants, setNewParticipants] = useState<{ firstName: string; lastName: string; }[]>([
     { firstName: '', lastName: '' }
@@ -61,10 +45,6 @@ const GroupPage = ({ params }: PageProps) => {
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isInviting, setIsInviting] = useState(false);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
-  const [isSettleUpModalOpen, setIsSettleUpModalOpen] = useState(false);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const currencies = [
     { code: 'USD', symbol: '$' },
