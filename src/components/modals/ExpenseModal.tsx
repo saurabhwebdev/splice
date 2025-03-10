@@ -17,6 +17,7 @@ const ExpenseModal = ({ isOpen, onClose, onSubmit, group, initialExpense }: Expe
   const [splitType, setSplitType] = useState<'equal' | 'custom'>('equal');
   const [splits, setSplits] = useState<{ participantName: string; amount: number; excluded: boolean; }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -69,8 +70,16 @@ const ExpenseModal = ({ isOpen, onClose, onSubmit, group, initialExpense }: Expe
   };
 
   useEffect(() => {
-    updateSplits();
-  }, [splitType, group.participants.length]);
+    if (amount && splits.length > 0) {
+      updateSplits();
+    }
+  }, [amount, splits, updateSplits]);
+
+  useEffect(() => {
+    if (selectedParticipants.length > 0) {
+      updateSplits();
+    }
+  }, [selectedParticipants, updateSplits]);
 
   const handleAmountChange = (value: string) => {
     setAmount(value);

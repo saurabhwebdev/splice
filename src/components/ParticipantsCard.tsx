@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import type { Group, Expense } from '@/utils/firebase';
+import { Group } from '@/types';
 
 interface ParticipantsCardProps {
   group: Group;

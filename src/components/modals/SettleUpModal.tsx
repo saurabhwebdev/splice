@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { Group, Expense } from '@/utils/firebase';
 
 interface Settlement {
@@ -111,7 +111,7 @@ const calculateSettlements = (balances: Balance[]): Settlement[] => {
 
 const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps) => {
   const [settlements, setSettlements] = useState<Settlement[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Calculate initial settlements
   useEffect(() => {
@@ -186,8 +186,8 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
         {settlements.length > 0 ? (
           <div className="space-y-6">
             <p className="text-sm text-gray-500">
-              Here's the simplest way to settle all debts with minimal transactions.
-              Click "Settle Up" for each payment once it's been made.
+              Let&apos;s make sure everyone&apos;s on the same page.
+              &quot;Settling up&quot; means you&apos;re confirming that all debts are cleared.
             </p>
 
             <div className="space-y-4">
@@ -276,7 +276,7 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
             </svg>
             <h3 className="text-lg font-medium text-gray-900 mb-2">All Settled Up!</h3>
             <p className="text-sm text-gray-500">
-              Everyone's balances are cleared. No payments needed.
+              Everyone&apos;s balances are cleared. No payments needed.
             </p>
           </div>
         )}

@@ -61,6 +61,10 @@ const GroupPage = ({ params }: PageProps) => {
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isInviting, setIsInviting] = useState(false);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+  const [isSettleUpModalOpen, setIsSettleUpModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const currencies = [
     { code: 'USD', symbol: '$' },
@@ -318,7 +322,7 @@ const GroupPage = ({ params }: PageProps) => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-gray-900">Group not found</h2>
-          <p className="mt-2 text-gray-500">This group might have been deleted or doesn't exist.</p>
+          <p className="mt-2 text-gray-500">This group might have been deleted or doesn&apos;t exist.</p>
           <button
             onClick={() => router.push('/')}
             className="mt-6 px-6 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"

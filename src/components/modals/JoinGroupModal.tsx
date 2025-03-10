@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 interface JoinGroupModalProps {
   isOpen: boolean;
