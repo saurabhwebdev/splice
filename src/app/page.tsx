@@ -59,6 +59,7 @@ export default function Home() {
               fill
               className="object-cover opacity-20"
               priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </div>
           <div className="relative h-full flex flex-col justify-center px-8 lg:px-16 py-24 lg:py-0">

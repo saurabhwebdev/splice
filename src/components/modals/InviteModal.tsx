@@ -12,7 +12,7 @@ const InviteModal = ({ isOpen, onClose, groupName, accessCode }: InviteModalProp
 
   if (!isOpen) return null;
 
-  const invitationText = `Join my expense group "${groupName}" on Splice!\nUse this access code to join: ${accessCode}`;
+  const invitationText = `Join my expense group "${groupName}" on Hisaab!\nUse this access code to join: ${accessCode}\n\nVisit https://hissab.online to join the group.`;
 
   const handleCopyText = async () => {
     try {
@@ -30,7 +30,7 @@ const InviteModal = ({ isOpen, onClose, groupName, accessCode }: InviteModalProp
   };
 
   const handleEmailShare = () => {
-    const encodedSubject = encodeURIComponent(`Join my expense group "${groupName}" on Splice`);
+    const encodedSubject = encodeURIComponent(`Join my expense group "${groupName}" on Hisaab`);
     const encodedBody = encodeURIComponent(`Hey!\n\n${invitationText}`);
     window.open(`mailto:?subject=${encodedSubject}&body=${encodedBody}`, '_blank');
   };

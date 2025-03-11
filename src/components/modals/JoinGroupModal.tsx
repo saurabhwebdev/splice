@@ -60,13 +60,13 @@ const JoinGroupModal = ({ isOpen, onClose, onJoin }: JoinGroupModalProps) => {
           {/* Header */}
           <div className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Join a Group</h2>
-            <p className="text-gray-600">Enter the group access code to join</p>
+            <p className="text-gray-700">Enter the group access code to join</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="accessCode" className="block text-sm font-medium text-gray-900 mb-1">
                 Access Code
               </label>
               <input
@@ -75,13 +75,13 @@ const JoinGroupModal = ({ isOpen, onClose, onJoin }: JoinGroupModalProps) => {
                 value={accessCode}
                 onChange={handleInputChange}
                 placeholder="Enter access code"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-500"
                 disabled={isLoading}
                 autoComplete="off"
                 autoFocus
               />
               {error && (
-                <p className="mt-2 text-sm text-red-600">{error}</p>
+                <p className="mt-2 text-sm text-red-600 font-medium">{error}</p>
               )}
             </div>
 
@@ -89,14 +89,14 @@ const JoinGroupModal = ({ isOpen, onClose, onJoin }: JoinGroupModalProps) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 disabled={isLoading || !accessCode.trim()}
               >
                 {isLoading ? 'Joining...' : 'Join Group'}
