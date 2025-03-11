@@ -18,7 +18,17 @@ const gradientColors = [
   'from-orange-600 to-yellow-700',
   'from-cyan-600 to-blue-700',
   'from-violet-600 to-indigo-700',
-  'from-rose-600 to-pink-700'
+  'from-rose-600 to-pink-700',
+  'from-emerald-600 to-teal-700',
+  'from-fuchsia-600 to-pink-700',
+  'from-amber-600 to-orange-700',
+  'from-lime-600 to-green-700',
+  'from-sky-600 to-blue-700',
+  'from-purple-600 to-violet-700',
+  'from-rose-600 to-red-700',
+  'from-teal-600 to-cyan-700',
+  'from-orange-600 to-amber-700',
+  'from-indigo-600 to-violet-700'
 ];
 
 export default function Home() {

@@ -141,33 +141,41 @@ const ParticipantsCard = ({ group, onAddParticipant, onDeleteParticipant }: Part
                         
                         {activeSettlement === fullName && (
                           <div 
-                            className="absolute right-0 mt-2 w-64 sm:w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-4 z-50"
-                            onClick={(e) => e.stopPropagation()}
+                            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveSettlement(null);
+                            }}
                           >
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="text-sm font-medium text-gray-900">Balance Details</h4>
-                              <button
-                                onClick={() => setActiveSettlement(null)}
-                                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="p-3 bg-gray-50 rounded-lg">
-                                <div className="text-sm text-gray-500">Current Balance</div>
-                                <div className={`text-lg font-semibold mt-1 ${
-                                  balance > 0 ? 'text-green-600' : 'text-red-600'
-                                }`}>
-                                  {balance > 0 ? '+' : ''}{group.currency} {balance.toFixed(2)}
-                                </div>
+                            <div 
+                              className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-lg font-semibold text-gray-900">Balance Details</h4>
+                                <button
+                                  onClick={() => setActiveSettlement(null)}
+                                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
                               </div>
-                              <div className="text-xs text-gray-500 mt-2">
-                                {balance > 0 
-                                  ? 'This member has paid more than their share'
-                                  : 'This member needs to pay their share'}
+                              <div className="space-y-4">
+                                <div className="p-4 bg-gray-50 rounded-xl">
+                                  <div className="text-sm text-gray-500">Current Balance</div>
+                                  <div className={`text-xl font-semibold mt-1 ${
+                                    balance > 0 ? 'text-green-600' : 'text-red-600'
+                                  }`}>
+                                    {balance > 0 ? '+' : ''}{group.currency} {balance.toFixed(2)}
+                                  </div>
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {balance > 0 
+                                    ? 'This member has paid more than their share'
+                                    : 'This member needs to pay their share'}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -178,11 +186,7 @@ const ParticipantsCard = ({ group, onAddParticipant, onDeleteParticipant }: Part
                     {/* Delete button */}
                     <button
                       onClick={() => onDeleteParticipant(index)}
-                      className={`p-2 sm:p-2.5 rounded-lg transition-colors ${
-                        index === group.participants.length - 1 
-                          ? 'opacity-100' 
-                          : 'opacity-0 group-hover:opacity-100'
-                      } text-gray-400 hover:text-red-600 hover:bg-red-50`}
+                      className="p-2 sm:p-2.5 rounded-lg transition-colors text-gray-400 hover:text-red-600 hover:bg-red-50"
                       title="Remove Member"
                     >
                       <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

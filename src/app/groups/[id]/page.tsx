@@ -47,6 +47,7 @@ const GroupPage = ({ params }: PageProps) => {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isInviting, setIsInviting] = useState(false);
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
+  const [showCoverOptions, setShowCoverOptions] = useState(false);
 
   const currencies = [
     { code: 'USD', symbol: '$' },
@@ -352,10 +353,10 @@ const GroupPage = ({ params }: PageProps) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Immersive Header - Made responsive with mobile optimization */}
-      <div className={`relative h-[45vh] sm:h-[50vh] md:h-[70vh] bg-gradient-to-br ${gradientColors[currentColorIndex]} md:bg-gray-900 -mt-16`}>
+      <div className={`relative h-[45vh] sm:h-[50vh] md:h-[70vh] bg-gradient-to-br ${gradientColors[currentColorIndex]} -mt-16`}>
         {/* Image only loads on tablet and above */}
         {group.headerImage && (
-          <div className="hidden md:block absolute inset-0">
+          <div className="hidden absolute inset-0">
             <Image
               src={group.headerImage}
               alt={group.name}
@@ -368,10 +369,10 @@ const GroupPage = ({ params }: PageProps) => {
           </div>
         )}
         {/* Gradient overlay - Enhanced for mobile */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/20 md:from-black/70 md:via-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/20" />
         
-        {/* Decorative mobile pattern */}
-        <div className="absolute inset-0 md:hidden opacity-20">
+        {/* Decorative pattern */}
+        <div className="absolute inset-0 opacity-20">
           <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="mobile-pattern" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
@@ -409,7 +410,7 @@ const GroupPage = ({ params }: PageProps) => {
 
               {/* Change Cover button - Hidden on mobile, shown on desktop */}
               <button
-                onClick={() => setIsSearchingImage(true)}
+                onClick={() => setShowCoverOptions(true)}
                 className="hidden sm:flex px-4 py-2.5 text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-all duration-300 backdrop-blur-sm items-center justify-center gap-2 group"
               >
                 <svg 
@@ -718,14 +719,14 @@ const GroupPage = ({ params }: PageProps) => {
         </div>
       </div>
 
-      {/* Refined Modal Design */}
-      {isSearchingImage && (
+      {/* Cover Options Modal */}
+      {showCoverOptions && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-3xl">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-lg">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Change Cover Image</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">Change Cover</h2>
               <button
-                onClick={() => setIsSearchingImage(false)}
+                onClick={() => setShowCoverOptions(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -733,44 +734,48 @@ const GroupPage = ({ params }: PageProps) => {
                 </svg>
               </button>
             </div>
-            <div className="mb-6">
-              <form onSubmit={(e) => { e.preventDefault(); handleImageSearch(); }} className="flex gap-3">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for images..."
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 text-gray-900 placeholder-gray-400"
-                />
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 font-medium"
-                  disabled={isSearching || !searchQuery.trim()}
-                >
-                  {isSearching ? 'Searching...' : 'Search'}
-                </button>
-              </form>
-              {searchError && (
-                <p className="mt-3 text-sm text-red-500 font-medium">{searchError}</p>
-              )}
-            </div>
-            <div className="grid grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto">
-              {searchResults.map((image) => (
-                <button
-                  key={image.id}
-                  onClick={() => handleImageSelect(image)}
-                  className="relative aspect-[4/3] group overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                >
-                  <Image
-                    src={image.urls.small}
-                    alt={image.alt_description || 'Unsplash image'}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    sizes="(max-width: 768px) 33vw, 25vw"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                </button>
-              ))}
+            
+            <div className="grid grid-cols-1 gap-4">
+              {/* Preview of next color */}
+              <div className={`h-24 rounded-xl bg-gradient-to-br ${gradientColors[(currentColorIndex + 1) % gradientColors.length]} mb-2`} />
+              
+              {/* Color Option */}
+              <button
+                onClick={() => {
+                  handleMobileColorChange();
+                  setShowCoverOptions(false);
+                }}
+                className="flex items-center gap-4 p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group"
+              >
+                <div className="p-3 bg-white rounded-lg shadow-sm group-hover:shadow">
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                  </svg>
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">Change Color</h3>
+                  <p className="text-sm text-gray-500">Click to cycle through beautiful gradients</p>
+                </div>
+              </button>
+
+              {/* Unsplash Option - Disabled */}
+              <button
+                disabled
+                className="flex items-center gap-4 p-6 bg-gray-50 rounded-xl opacity-75 cursor-not-allowed"
+              >
+                <div className="p-3 bg-white rounded-lg shadow-sm">
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">Unsplash Images</h3>
+                    <span className="px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">Coming Soon</span>
+                  </div>
+                  <p className="text-sm text-gray-500">Choose from millions of beautiful photos</p>
+                </div>
+              </button>
             </div>
           </div>
         </div>
