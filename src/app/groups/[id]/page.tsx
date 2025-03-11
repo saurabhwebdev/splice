@@ -46,12 +46,28 @@ const GroupPage = ({ params }: PageProps) => {
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isInviting, setIsInviting] = useState(false);
+  const [currentColorIndex, setCurrentColorIndex] = useState(0);
 
   const currencies = [
     { code: 'USD', symbol: '$' },
     { code: 'EUR', symbol: '€' },
     { code: 'GBP', symbol: '£' },
     { code: 'INR', symbol: '₹' },
+  ];
+
+  const gradientColors = [
+    'from-indigo-600 to-blue-700',
+    'from-purple-600 to-pink-700',
+    'from-green-600 to-teal-700',
+    'from-red-600 to-orange-700',
+    'from-blue-600 to-cyan-700',
+    'from-yellow-600 to-red-700',
+    'from-pink-600 to-purple-700',
+    'from-teal-600 to-green-700',
+    'from-orange-600 to-yellow-700',
+    'from-cyan-600 to-blue-700',
+    'from-violet-600 to-indigo-700',
+    'from-rose-600 to-pink-700'
   ];
 
   // Calculate pagination
@@ -290,6 +306,10 @@ const GroupPage = ({ params }: PageProps) => {
     }
   };
 
+  const handleMobileColorChange = () => {
+    setCurrentColorIndex((prevIndex) => (prevIndex + 1) % gradientColors.length);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -318,7 +338,7 @@ const GroupPage = ({ params }: PageProps) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Immersive Header - Made responsive with mobile optimization */}
-      <div className="relative h-[45vh] sm:h-[50vh] md:h-[70vh] bg-gradient-to-br from-indigo-600 to-blue-700 md:bg-gray-900 -mt-16">
+      <div className={`relative h-[45vh] sm:h-[50vh] md:h-[70vh] bg-gradient-to-br ${gradientColors[currentColorIndex]} md:bg-gray-900 -mt-16`}>
         {/* Image only loads on tablet and above */}
         {group.headerImage && (
           <div className="hidden md:block absolute inset-0">
@@ -434,7 +454,13 @@ const GroupPage = ({ params }: PageProps) => {
                 <div className="grid grid-cols-2 sm:flex sm:justify-end gap-2">
                   {/* Change Cover button - Shown only on mobile */}
                   <button
-                    onClick={() => setIsSearchingImage(true)}
+                    onClick={() => {
+                      if (window.innerWidth < 640) {
+                        handleMobileColorChange();
+                      } else {
+                        setIsSearchingImage(true);
+                      }
+                    }}
                     className="sm:hidden col-span-2 px-4 py-2 text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
