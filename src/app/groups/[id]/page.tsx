@@ -318,7 +318,7 @@ const GroupPage = ({ params }: PageProps) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Immersive Header - Made responsive with mobile optimization */}
-      <div className="relative h-[40vh] sm:h-[50vh] md:h-[70vh] bg-gradient-to-br from-indigo-600 to-blue-700 md:bg-gray-900 -mt-16">
+      <div className="relative h-[45vh] sm:h-[50vh] md:h-[70vh] bg-gradient-to-br from-indigo-600 to-blue-700 md:bg-gray-900 -mt-16">
         {/* Image only loads on tablet and above */}
         {group.headerImage && (
           <div className="hidden md:block absolute inset-0">
@@ -333,11 +333,11 @@ const GroupPage = ({ params }: PageProps) => {
             />
           </div>
         )}
-        {/* Gradient overlay - Adjusted for mobile */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-transparent md:from-black/70 md:via-black/40" />
+        {/* Gradient overlay - Enhanced for mobile */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/20 md:from-black/70 md:via-black/40" />
         
         {/* Decorative mobile pattern */}
-        <div className="absolute inset-0 md:hidden">
+        <div className="absolute inset-0 md:hidden opacity-20">
           <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="mobile-pattern" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
@@ -348,38 +348,35 @@ const GroupPage = ({ params }: PageProps) => {
           </svg>
         </div>
         
-        {/* Header Content - Improved mobile layout */}
+        {/* Header Content - Enhanced mobile layout */}
         <div className="absolute inset-0 flex flex-col justify-between">
-          <div className="w-full pt-20 sm:pt-24 md:pt-28 px-4 md:px-8">
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-4">
-              <div className="space-y-1 w-full md:w-auto">
+          {/* Top Section */}
+          <div className="w-full pt-6 sm:pt-10 px-4 md:px-8">
+            <div className="max-w-7xl mx-auto space-y-4 sm:space-y-0 sm:flex sm:flex-row justify-between items-start">
+              <div className="w-full sm:w-auto">
                 {isEditingName ? (
                   <input
                     type="text"
                     value={group.name}
                     onChange={(e) => handleNameChange(e.target.value)}
                     onBlur={() => setIsEditingName(false)}
-                    className="text-2xl sm:text-3xl md:text-5xl font-bold text-white bg-transparent border-b-2 border-white/30 focus:outline-none focus:border-white w-full"
+                    className="text-2xl sm:text-3xl md:text-4xl font-bold text-white bg-transparent border-b-2 border-white/30 focus:outline-none focus:border-white w-full"
                     autoFocus
                   />
                 ) : (
                   <h1 
-                    className="text-2xl sm:text-3xl md:text-5xl font-bold text-white cursor-pointer hover:opacity-90 transition-opacity tracking-tight"
+                    className="text-2xl sm:text-3xl md:text-4xl font-bold text-white cursor-pointer hover:opacity-90 transition-opacity tracking-tight"
                     onClick={() => setIsEditingName(true)}
                   >
                     {group.name}
                   </h1>
                 )}
-                {group.headerImageAttribution && (
-                  <p className="hidden md:block text-xs sm:text-sm text-white/70 font-medium tracking-wide">
-                    {group.headerImageAttribution}
-                  </p>
-                )}
               </div>
 
+              {/* Change Cover button - Hidden on mobile, shown on desktop */}
               <button
                 onClick={() => setIsSearchingImage(true)}
-                className="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-all duration-300 backdrop-blur-sm flex items-center justify-center gap-2 group"
+                className="hidden sm:flex px-4 py-2.5 text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-all duration-300 backdrop-blur-sm items-center justify-center gap-2 group"
               >
                 <svg 
                   className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" 
@@ -399,24 +396,33 @@ const GroupPage = ({ params }: PageProps) => {
             </div>
           </div>
 
-          {/* Quick Stats Bar - Mobile responsive */}
+          {group.headerImageAttribution && (
+            <div className="hidden md:block absolute bottom-20 left-4 md:left-8">
+              <p className="text-xs sm:text-sm text-white/70 font-medium tracking-wide">
+                {group.headerImageAttribution}
+              </p>
+            </div>
+          )}
+
+          {/* Quick Stats Bar - Enhanced mobile layout */}
           <div className="w-full bg-white/10 backdrop-blur-md border-t border-white/10">
-            <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 sm:py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="grid grid-cols-3 sm:flex items-center gap-4 md:gap-8">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
+              <div className="flex flex-col gap-4">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-3 items-center gap-2 sm:gap-8">
+                  <div className="flex flex-col items-center sm:items-start gap-0.5">
                     <span className="text-white/70 text-xs sm:text-sm">Total Spent</span>
                     <span className="text-white font-semibold text-sm sm:text-base md:text-lg">
                       {currencies.find(c => c.code === group.currency)?.symbol}{group.totalExpenditure.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                  <div className="flex flex-col items-center sm:items-start gap-0.5">
                     <span className="text-white/70 text-xs sm:text-sm">Members</span>
                     <span className="text-white font-semibold text-sm sm:text-base md:text-lg">
                       {group.participants.length}
                     </span>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                  <div className="flex flex-col items-center sm:items-start gap-0.5">
                     <span className="text-white/70 text-xs sm:text-sm">Currency</span>
                     <span className="text-white font-semibold text-sm sm:text-base md:text-lg">
                       {group.currency}
@@ -424,22 +430,32 @@ const GroupPage = ({ params }: PageProps) => {
                   </div>
                 </div>
                 
-                {/* Quick Actions - Mobile friendly */}
-                <div className="flex items-center justify-end gap-2 sm:gap-3 mt-2 sm:mt-0">
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 sm:flex sm:justify-end gap-2">
+                  {/* Change Cover button - Shown only on mobile */}
+                  <button
+                    onClick={() => setIsSearchingImage(true)}
+                    className="sm:hidden col-span-2 px-4 py-2 text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Change Cover
+                  </button>
                   <button
                     onClick={handleSettleUp}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors flex items-center gap-1.5 sm:gap-2"
+                    className="px-4 py-2 text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
                   >
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                     Settle Up
                   </button>
                   <button
                     onClick={handleSendInvitation}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors flex items-center gap-1.5 sm:gap-2"
+                    className="px-4 py-2 text-sm font-medium text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
                   >
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                     </svg>
                     Invite
