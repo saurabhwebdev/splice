@@ -37,6 +37,7 @@ export interface Group {
   createdAt: Date;
   accessCode: string;
   expenses: Expense[];
+  colorIndex?: number;
 }
 
 export interface Participant {

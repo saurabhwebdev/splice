@@ -93,6 +93,8 @@ const GroupPage = ({ params }: PageProps) => {
         const groupData = await getGroup(id);
         if (groupData) {
           setGroup(groupData);
+          // Set the color index from the group data, defaulting to 0 if not set
+          setCurrentColorIndex(groupData.colorIndex || 0);
         } else {
           router.push('/');
         }
@@ -306,8 +308,20 @@ const GroupPage = ({ params }: PageProps) => {
     }
   };
 
-  const handleMobileColorChange = () => {
-    setCurrentColorIndex((prevIndex) => (prevIndex + 1) % gradientColors.length);
+  const handleMobileColorChange = async () => {
+    if (!group) return;
+    
+    const newColorIndex = (currentColorIndex + 1) % gradientColors.length;
+    setCurrentColorIndex(newColorIndex);
+
+    try {
+      await updateGroup(group.id, { colorIndex: newColorIndex });
+      setGroup({ ...group, colorIndex: newColorIndex });
+    } catch (error) {
+      console.error('Error updating color:', error);
+      // Revert the color if update fails
+      setCurrentColorIndex(group.colorIndex || 0);
+    }
   };
 
   if (loading) {

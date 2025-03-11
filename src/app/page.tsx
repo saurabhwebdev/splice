@@ -6,6 +6,21 @@ import { getAllGroups } from '@/utils/firebase';
 import type { Group } from '@/utils/firebase';
 import Image from 'next/image';
 
+const gradientColors = [
+  'from-indigo-600 to-blue-700',
+  'from-purple-600 to-pink-700',
+  'from-green-600 to-teal-700',
+  'from-red-600 to-orange-700',
+  'from-blue-600 to-cyan-700',
+  'from-yellow-600 to-red-700',
+  'from-pink-600 to-purple-700',
+  'from-teal-600 to-green-700',
+  'from-orange-600 to-yellow-700',
+  'from-cyan-600 to-blue-700',
+  'from-violet-600 to-indigo-700',
+  'from-rose-600 to-pink-700'
+];
+
 export default function Home() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,12 +117,17 @@ export default function Home() {
                       className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 cursor-pointer overflow-hidden"
                     >
                       <div className="relative h-40">
-                        <Image
-                          src={group.headerImage || '/default-group-header.jpg'}
-                          alt={group.name}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
+                        {/* Desktop view - Show image */}
+                        <div className="hidden md:block">
+                          <Image
+                            src={group.headerImage || '/default-group-header.jpg'}
+                            alt={group.name}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </div>
+                        {/* Mobile view - Show gradient */}
+                        <div className={`md:hidden absolute inset-0 bg-gradient-to-br ${gradientColors[group.colorIndex || 0]}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-6">
                           <h3 className="text-xl font-semibold text-white group-hover:translate-x-1 transition-transform duration-200">
