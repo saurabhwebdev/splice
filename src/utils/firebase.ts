@@ -112,8 +112,8 @@ export const getAllGroups = async (): Promise<Group[]> => {
 
 export const updateGroup = async (groupId: string, updates: Partial<Group>) => {
   try {
-    const docRef = doc(db, 'groups', groupId);
-    await updateDoc(docRef, updates);
+    const groupRef = doc(db, 'groups', groupId);
+    await updateDoc(groupRef, updates);
   } catch (error) {
     console.error('Error updating group:', error);
     throw error;
@@ -142,10 +142,13 @@ export const addExpense = async (groupId: string, expense: Omit<Expense, 'id' | 
 
     await setDoc(expenseRef, newExpense);
 
-    // Update group's total expenditure
+    // Check if this is a settlement expense
+    const isSettlement = expense.description.toLowerCase().includes('settlement');
+
+    // Update group's total expenditure only if it's not a settlement
     const groupRef = doc(db, 'groups', groupId);
     await updateDoc(groupRef, {
-      totalExpenditure: increment(expense.amount),
+      totalExpenditure: isSettlement ? increment(0) : increment(expense.amount),
       expenses: arrayUnion(newExpense)
     });
 
@@ -161,10 +164,13 @@ export const deleteExpense = async (groupId: string, expense: Expense) => {
     const expenseRef = doc(db, 'expenses', expense.id);
     await deleteDoc(expenseRef);
 
-    // Update group's total expenditure
+    // Check if this is a settlement expense
+    const isSettlement = expense.description.toLowerCase().includes('settlement');
+
+    // Update group's total expenditure only if it's not a settlement
     const groupRef = doc(db, 'groups', groupId);
     await updateDoc(groupRef, {
-      totalExpenditure: increment(-expense.amount),
+      totalExpenditure: isSettlement ? increment(0) : increment(-expense.amount),
       expenses: arrayRemove(expense)
     });
   } catch (error) {
@@ -192,10 +198,28 @@ export const updateExpense = async (groupId: string, expenseId: string, expense:
 
     await setDoc(expenseRef, updatedExpense);
 
+    // Check if these are settlement expenses
+    const wasSettlement = oldExpense.description.toLowerCase().includes('settlement');
+    const isSettlement = expense.description.toLowerCase().includes('settlement');
+
+    // Calculate the change to total expenditure based on settlement status
+    let expenditureChange = 0;
+    if (!wasSettlement && !isSettlement) {
+      // Neither was a settlement, so calculate the difference
+      expenditureChange = expense.amount - oldExpense.amount;
+    } else if (!wasSettlement && isSettlement) {
+      // Changed from regular expense to settlement, remove the old amount
+      expenditureChange = -oldExpense.amount;
+    } else if (wasSettlement && !isSettlement) {
+      // Changed from settlement to regular expense, add the new amount
+      expenditureChange = expense.amount;
+    }
+    // If both were settlements, no change to total expenditure
+
     // Update group's total expenditure
     const groupRef = doc(db, 'groups', groupId);
     await updateDoc(groupRef, {
-      totalExpenditure: increment(expense.amount - oldExpense.amount),
+      totalExpenditure: increment(expenditureChange),
       expenses: arrayUnion(updatedExpense)
     });
 
@@ -240,6 +264,33 @@ export const getGroupByAccessCode = async (accessCode: string) => {
     } as Group;
   } catch (error) {
     console.error('Error getting group by access code:', error);
+    throw error;
+  }
+};
+
+// Function to recalculate total expenditure excluding settlements
+export const recalculateGroupExpenditure = async (groupId: string, expenses: Expense[]) => {
+  try {
+    // Filter out settlement expenses
+    const nonSettlementExpenses = expenses.filter(
+      expense => !expense.description.toLowerCase().includes('settlement')
+    );
+    
+    // Calculate the correct total
+    const correctTotal = nonSettlementExpenses.reduce(
+      (total, expense) => total + expense.amount, 
+      0
+    );
+    
+    // Update the group with the correct total
+    const groupRef = doc(db, 'groups', groupId);
+    await updateDoc(groupRef, {
+      totalExpenditure: correctTotal
+    });
+    
+    return correctTotal;
+  } catch (error) {
+    console.error('Error recalculating group expenditure:', error);
     throw error;
   }
 };

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { use } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { getGroup, updateGroup, deleteGroup, addExpense, deleteExpense, updateExpense } from '@/utils/firebase';
+import { getGroup, updateGroup, deleteGroup, addExpense, deleteExpense, updateExpense, recalculateGroupExpenditure } from '@/utils/firebase';
 import { searchUnsplashImages } from '@/utils/unsplash';
 import type { Group, Expense } from '@/utils/firebase';
 import type { UnsplashImage } from '@/utils/unsplash';
@@ -48,6 +48,7 @@ const GroupPage = ({ params }: PageProps) => {
   const [isInviting, setIsInviting] = useState(false);
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
   const [showCoverOptions, setShowCoverOptions] = useState(false);
+  const [expenseFilter, setExpenseFilter] = useState<'all' | 'regular' | 'settlements'>('all');
 
   const currencies = [
     { code: 'USD', symbol: '$' },
@@ -71,11 +72,32 @@ const GroupPage = ({ params }: PageProps) => {
     'from-rose-600 to-pink-700'
   ];
 
-  // Calculate pagination
+  // Calculate pagination with filtered expenses
+  const filteredExpenses = useMemo(() => {
+    if (!group) return [];
+    
+    if (expenseFilter === 'all') {
+      return group.expenses;
+    } else if (expenseFilter === 'regular') {
+      return group.expenses.filter(expense => 
+        !expense.description.toLowerCase().includes('settlement')
+      );
+    } else { // settlements
+      return group.expenses.filter(expense => 
+        expense.description.toLowerCase().includes('settlement')
+      );
+    }
+  }, [group, expenseFilter]);
+
   const indexOfLastExpense = currentPage * expensesPerPage;
   const indexOfFirstExpense = indexOfLastExpense - expensesPerPage;
-  const currentExpenses = group?.expenses.slice(indexOfFirstExpense, indexOfLastExpense) || [];
-  const totalPages = Math.ceil((group?.expenses.length || 0) / expensesPerPage);
+  const currentExpenses = filteredExpenses.slice(indexOfFirstExpense, indexOfLastExpense);
+  const totalPages = Math.ceil(filteredExpenses.length / expensesPerPage);
+
+  // Reset to first page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [expenseFilter]);
 
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -93,9 +115,19 @@ const GroupPage = ({ params }: PageProps) => {
 
         const groupData = await getGroup(id);
         if (groupData) {
-          setGroup(groupData);
-          // Set the color index from the group data, defaulting to 0 if not set
-          setCurrentColorIndex(groupData.colorIndex || 0);
+          // Recalculate total expenditure to ensure it excludes settlements
+          await recalculateGroupExpenditure(id, groupData.expenses);
+          
+          // Reload the group to get the updated totalExpenditure
+          const updatedGroupData = await getGroup(id);
+          if (updatedGroupData) {
+            setGroup(updatedGroupData);
+            
+            // Set the color index from the group data, defaulting to 0 if not set
+            setCurrentColorIndex(updatedGroupData.colorIndex || 0);
+          } else {
+            router.push('/');
+          }
         } else {
           router.push('/');
         }
@@ -446,7 +478,7 @@ const GroupPage = ({ params }: PageProps) => {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-3 items-center gap-2 sm:gap-8">
                   <div className="flex flex-col items-center sm:items-start gap-0.5">
-                    <span className="text-white/70 text-xs sm:text-sm">Total Spent</span>
+                    <span className="text-white/70 text-xs sm:text-sm">Total Expenses</span>
                     <span className="text-white font-semibold text-sm sm:text-base md:text-lg">
                       {currencies.find(c => c.code === group.currency)?.symbol}{group.totalExpenditure.toFixed(2)}
                     </span>
@@ -516,42 +548,59 @@ const GroupPage = ({ params }: PageProps) => {
             title="Quick Settings" 
             defaultExpanded={false}
           >
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-2">
-                  Currency
-                </label>
-                <select
-                  value={group.currency}
-                  onChange={(e) => handleCurrencyChange(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 text-gray-900 text-sm"
-                >
-                  {currencies.map((curr) => (
-                    <option key={curr.code} value={curr.code}>
-                      {curr.code} ({curr.symbol})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-2">
-                  Access Code
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={group.accessCode}
-                    readOnly
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 font-mono text-sm"
-                  />
-                  <button
-                    onClick={() => navigator.clipboard.writeText(group.accessCode)}
-                    className="p-2 text-gray-500 hover:text-gray-900 transition-colors"
+            <div className="space-y-3">
+              {/* Currency Setting */}
+              <div className="flex items-center gap-3 py-2 border-b border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Currency
+                  </label>
+                  <select
+                    value={group.currency}
+                    onChange={(e) => handleCurrencyChange(e.target.value)}
+                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-200 text-gray-900 text-sm"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                  </button>
+                    {currencies.map((curr) => (
+                      <option key={curr.code} value={curr.code}>
+                        {curr.code} ({curr.symbol})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              {/* Access Code Setting */}
+              <div className="flex items-center gap-3 py-2">
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Access Code
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={group.accessCode}
+                      readOnly
+                      className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-gray-900 font-mono text-sm"
+                    />
+                    <button
+                      onClick={() => navigator.clipboard.writeText(group.accessCode)}
+                      className="p-1.5 text-gray-500 hover:text-gray-900 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -564,9 +613,43 @@ const GroupPage = ({ params }: PageProps) => {
             {/* Expenses Card */}
             <CollapsibleCard 
               title="Expenses" 
-              subtitle={`${group.expenses.length} total`}
+              subtitle={`${filteredExpenses.length} of ${group.expenses.length} total`}
             >
-              <div className="flex items-center justify-end mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                {/* Filter Controls */}
+                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setExpenseFilter('all')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      expenseFilter === 'all'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setExpenseFilter('regular')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      expenseFilter === 'regular'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Regular
+                  </button>
+                  <button
+                    onClick={() => setExpenseFilter('settlements')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      expenseFilter === 'settlements'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Settlements
+                  </button>
+                </div>
+                
                 <button
                   onClick={() => {
                     setEditingExpense(null);
@@ -581,7 +664,7 @@ const GroupPage = ({ params }: PageProps) => {
                 </button>
               </div>
 
-              {group.expenses.length > 0 ? (
+              {filteredExpenses.length > 0 ? (
                 <>
                   <div className="space-y-4">
                     {currentExpenses.map((expense) => (
@@ -640,7 +723,13 @@ const GroupPage = ({ params }: PageProps) => {
                 </>
               ) : (
                 <div className="h-64 flex items-center justify-center">
-                  <p className="text-gray-400 font-medium">No expenses yet</p>
+                  <p className="text-gray-400 font-medium">
+                    {expenseFilter === 'all' 
+                      ? 'No expenses yet' 
+                      : expenseFilter === 'regular' 
+                        ? 'No regular expenses yet' 
+                        : 'No settlements yet'}
+                  </p>
                 </div>
               )}
             </CollapsibleCard>
@@ -651,53 +740,73 @@ const GroupPage = ({ params }: PageProps) => {
             {/* Settings Card - Hidden on mobile */}
             <div className="hidden md:block">
               <CollapsibleCard title="Settings">
-                <div className="flex items-end justify-end mb-6">
-                  <button
-                    onClick={handleDeleteGroup}
-                    className="text-red-600 hover:text-red-700 transition-colors"
-                    title="Delete Group"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                      Currency
-                    </label>
-                    <select
-                      value={group.currency}
-                      onChange={(e) => handleCurrencyChange(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 text-gray-900"
+                <div className="space-y-4">
+                  {/* Delete Group Button */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleDeleteGroup}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-white hover:bg-red-600 rounded-md transition-colors border border-red-200 hover:border-red-600"
+                      title="Delete Group"
                     >
-                      {currencies.map((curr) => (
-                        <option key={curr.code} value={curr.code}>
-                          {curr.code} ({curr.symbol})
-                        </option>
-                      ))}
-                    </select>
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete Group
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                      Access Code
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={group.accessCode}
-                        readOnly
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 font-mono text-sm"
-                      />
-                      <button
-                        onClick={() => navigator.clipboard.writeText(group.accessCode)}
-                        className="p-2.5 text-gray-500 hover:text-gray-900 transition-colors"
+                  
+                  {/* Currency Setting */}
+                  <div className="flex items-center gap-3 py-2 border-b border-gray-100">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                        Currency
+                      </label>
+                      <select
+                        value={group.currency}
+                        onChange={(e) => handleCurrencyChange(e.target.value)}
+                        className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-200 text-gray-900 text-sm"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                        </svg>
-                      </button>
+                        {currencies.map((curr) => (
+                          <option key={curr.code} value={curr.code}>
+                            {curr.code} ({curr.symbol})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Access Code Setting */}
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                        Access Code
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={group.accessCode}
+                          readOnly
+                          className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-gray-900 font-mono text-sm"
+                        />
+                        <button
+                          onClick={() => navigator.clipboard.writeText(group.accessCode)}
+                          className="p-1.5 text-gray-500 hover:text-gray-900 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -708,6 +817,7 @@ const GroupPage = ({ params }: PageProps) => {
             <CollapsibleCard 
               title="Participants" 
               subtitle={`${group.participants.length} members`}
+              className="mb-4"
             >
               <ParticipantsCard
                 group={group}
