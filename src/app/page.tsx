@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getAllGroups, getGroupByAccessCode } from '@/utils/firebase';
 import type { Group } from '@/utils/firebase';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import JoinGroupModal from '@/components/modals/JoinGroupModal';
 
 const gradientColors = [
@@ -36,12 +37,25 @@ export default function Home() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const router = useRouter();
+
+  // Track mouse position for interactive effects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        // Get accessed group IDs from localStorage
         const accessedGroupIds = JSON.parse(localStorage.getItem('accessedGroups') || '[]');
         
         if (accessedGroupIds.length === 0) {
@@ -49,7 +63,6 @@ export default function Home() {
           return;
         }
 
-        // Only fetch groups that have been accessed
         const fetchedGroups = await getAllGroups();
         const filteredGroups = fetchedGroups.filter(group => 
           accessedGroupIds.includes(group.id)
@@ -73,7 +86,6 @@ export default function Home() {
         throw new Error('Group not found. Please check the access code and try again.');
       }
 
-      // Store the group ID in localStorage
       try {
         const accessedGroups = JSON.parse(localStorage.getItem('accessedGroups') || '[]');
         if (!accessedGroups.includes(group.id)) {
@@ -81,7 +93,6 @@ export default function Home() {
         }
       } catch (storageError) {
         console.error('Error updating localStorage:', storageError);
-        // Continue even if localStorage fails - it's not critical
       }
 
       router.push(`/groups/${group.id}`);
@@ -94,169 +105,173 @@ export default function Home() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-gray-900 border-r-transparent"></div>
+        <div className="relative w-16 h-16">
+          <div className="absolute top-0 left-0 w-16 h-16 animate-ping rounded-full bg-indigo-400 opacity-75"></div>
+          <div className="relative w-16 h-16 animate-spin rounded-full border-4 border-solid border-gray-200 border-t-indigo-600"></div>
+        </div>
       </div>
     );
   }
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="relative flex flex-col lg:flex-row min-h-screen">
-        {/* Left Section - Welcome */}
-        <div className="w-full lg:w-1/2 min-h-[60vh] lg:min-h-screen bg-gray-900 relative overflow-hidden">
-          <div className="absolute inset-0">
-            <Image
-              src="/hero-pattern.jpg"
-              alt="Background pattern"
-              fill
-              className="object-cover opacity-20"
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-          </div>
-          <div className="relative h-full flex flex-col justify-center px-8 lg:px-16 py-24 lg:py-0">
-            <div className="max-w-xl">
-              <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-white mb-6">
+      {/* Hero Section */}
+      <div className="relative min-h-screen flex flex-col">
+        {/* Animated Background */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Gradient Orbs */}
+          <div 
+            className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-r from-indigo-500/30 to-blue-500/30 blur-3xl"
+            style={{
+              left: `${mousePosition.x * 10}%`,
+              top: `${mousePosition.y * 10}%`,
+              transform: 'translate(-50%, -50%)',
+              transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          />
+          <div 
+            className="absolute w-[400px] h-[400px] rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-3xl"
+            style={{
+              right: `${(1 - mousePosition.x) * 10}%`,
+              bottom: `${(1 - mousePosition.y) * 10}%`,
+              transform: 'translate(50%, 50%)',
+              transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          />
+        </div>
+
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
+
+        {/* Content */}
+        <div className="relative flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center max-w-3xl mx-auto"
+            >
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight mb-6">
                 Split expenses with friends
-                <span className="block mt-2 text-indigo-400">effortlessly</span>
+                <span className="block mt-2 bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                  effortlessly
+                </span>
               </h1>
-              <p className="text-lg text-gray-300 leading-relaxed mb-12">
+              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
                 Create groups, track shared expenses, and settle up with your friends. No more awkward money conversations.
               </p>
-              
+
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <button
+              <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => router.push('/new-group')}
-                  className="group relative px-8 py-4 text-base font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-500 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-gray-900 flex-1 flex items-center justify-center"
+                  className="relative px-8 py-4 text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden"
                 >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Create New Group
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 group-hover:translate-x-1 transition-transform duration-200">
-                    →
+                  <span className="relative z-10 flex items-center justify-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create New Group
                   </span>
-                </button>
-                
-                <button
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setIsJoinModalOpen(true)}
-                  className="group relative px-8 py-4 text-base font-medium text-indigo-600 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-900 flex-1 flex items-center justify-center"
+                  className="px-8 py-4 text-base font-medium text-indigo-600 bg-white rounded-2xl shadow-lg hover:shadow-xl border-2 border-indigo-100 hover:border-indigo-200 transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                   </svg>
                   Join Existing Group
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
 
-        {/* Right Section - Groups */}
-        <div className="w-full lg:w-1/2 min-h-[40vh] lg:min-h-screen bg-white relative">
-          <div className="h-full overflow-auto px-8 lg:px-16 py-16">
-            {groups.length > 0 ? (
-              <>
-                <div className="sticky top-0 bg-white/80 backdrop-blur-sm py-6 z-10">
-                  <h2 className="text-2xl font-semibold text-gray-900">Your Groups</h2>
-                  <p className="text-gray-500 mt-1">Pick up where you left off</p>
+          {/* Recent Groups Section */}
+          {groups.length > 0 && (
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="bg-white/50 backdrop-blur-lg rounded-3xl border border-gray-100 shadow-lg p-6 sm:p-8"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Recent Groups</h2>
+                  <span className="text-sm text-gray-500">{groups.length} groups</span>
                 </div>
-                
-                <div className="space-y-6 mt-8">
+
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {groups.map((group) => (
-                    <div
+                    <motion.div
                       key={group.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => router.push(`/groups/${group.id}`)}
-                      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 cursor-pointer overflow-hidden"
+                      className="group relative bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 cursor-pointer overflow-hidden"
                     >
-                      <div className="relative h-40">
-                        {/* Desktop view - Show image */}
-                        <div className="hidden md:block">
-                          <Image
-                            src={group.headerImage || '/default-group-header.jpg'}
-                            alt={group.name}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        </div>
-                        {/* Mobile view - Show gradient */}
-                        <div className={`md:hidden absolute inset-0 bg-gradient-to-br ${gradientColors[group.colorIndex || 0]}`} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-6">
-                          <h3 className="text-xl font-semibold text-white group-hover:translate-x-1 transition-transform duration-200">
+                      <div className="relative h-32">
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-blue-500 opacity-90" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.2),transparent)]" />
+                        <div className="absolute inset-0 p-4 flex flex-col justify-between">
+                          <h3 className="text-lg font-semibold text-white group-hover:translate-x-1 transition-transform duration-200">
                             {group.name}
                           </h3>
-                          <div className="flex items-center gap-4 mt-2">
-                            <div className="flex items-center gap-2">
-                              <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                              </svg>
-                              <span className="text-sm text-white/80">
-                                {group.participants.length} members
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                              </div>
+                              <span className="text-sm text-white/90">
+                                {group.participants.length}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              <span className="text-sm text-white/80">
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </div>
+                              <span className="text-sm text-white/90">
                                 {group.currency} {group.totalExpenditure.toFixed(2)}
                               </span>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
-              </>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center">
-                <div className="bg-gray-50 rounded-full p-6 mb-6">
-                  <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Groups Yet</h3>
-                <p className="text-gray-500 mb-8 max-w-sm">
-                  Create your first group or join an existing one using an access code
-                </p>
-                
-                {/* Action Buttons for Empty State */}
-                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-                  <button
-                    onClick={() => router.push('/new-group')}
-                    className="flex-1 px-6 py-3 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center"
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Create Group
-                  </button>
-                  
-                  <button
-                    onClick={() => setIsJoinModalOpen(true)}
-                    className="flex-1 px-6 py-3 text-sm font-medium text-gray-900 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
-                    Join Group
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+              </motion.div>
+            </div>
+          )}
         </div>
       </div>
-      
+
       {/* Join Group Modal */}
       <JoinGroupModal
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
         onJoin={handleJoinGroup}
       />
+
+      {/* CSS for grid pattern */}
+      <style jsx>{`
+        .bg-grid-pattern {
+          background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+          background-size: 40px 40px;
+        }
+      `}</style>
     </main>
   );
 }
