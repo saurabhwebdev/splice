@@ -28,25 +28,19 @@ const ExpenseModal = ({ isOpen, onClose, onSubmit, group, initialExpense }: Expe
     }));
   }, [group.participants]);
 
-  const updateSplits = useCallback(() => {
-    const numAmount = Number(amount) || 0;
-    const includedParticipants = splits.filter(s => !s.excluded).length || group.participants.length;
+  const recalculateEqualSplits = useCallback((currentSplits: typeof splits, currentAmount: string) => {
+    const numAmount = Number(currentAmount) || 0;
+    const includedParticipants = currentSplits.filter(s => !s.excluded).length;
     
-    if (splitType === 'equal' && includedParticipants > 0) {
+    if (includedParticipants > 0) {
       const splitAmount = Number((numAmount / includedParticipants).toFixed(2));
-      setSplits(prevSplits => 
-        group.participants.map(p => {
-          const participantName = `${p.firstName} ${p.lastName}`;
-          const existingSplit = prevSplits.find(s => s.participantName === participantName);
-          return {
-            participantName,
-            amount: existingSplit?.excluded ? 0 : splitAmount,
-            excluded: existingSplit?.excluded || false
-          };
-        })
-      );
+      return currentSplits.map(split => ({
+        ...split,
+        amount: split.excluded ? 0 : splitAmount
+      }));
     }
-  }, [amount, group.participants, splitType]);
+    return currentSplits;
+  }, []);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -80,15 +74,18 @@ const ExpenseModal = ({ isOpen, onClose, onSubmit, group, initialExpense }: Expe
     }
   }, [isOpen, initialExpense, group.participants, participantsMap]);
 
-  // Update splits when amount changes
+  // Update splits when amount or split type changes
   useEffect(() => {
-    if (amount && splitType === 'equal') {
-      updateSplits();
+    if (splitType === 'equal' && amount) {
+      setSplits(prevSplits => recalculateEqualSplits(prevSplits, amount));
     }
-  }, [amount, splitType, updateSplits]);
+  }, [amount, splitType, recalculateEqualSplits]);
 
   const handleAmountChange = (value: string) => {
     setAmount(value);
+    if (splitType === 'equal') {
+      setSplits(prevSplits => recalculateEqualSplits(prevSplits, value));
+    }
   };
 
   const handleSplitChange = (index: number, value: string) => {
@@ -102,21 +99,26 @@ const ExpenseModal = ({ isOpen, onClose, onSubmit, group, initialExpense }: Expe
   };
 
   const handleExcludeParticipant = (index: number) => {
+    if (!amount) return;
+
     setSplits(prevSplits => {
       const newSplits = [...prevSplits];
-      newSplits[index].excluded = !newSplits[index].excluded;
-      newSplits[index].amount = 0;
+      // Toggle the excluded state
+      newSplits[index] = {
+        ...newSplits[index],
+        excluded: !newSplits[index].excluded,
+        amount: 0 // Reset amount when excluding
+      };
 
+      // If using equal splits, recalculate for all non-excluded participants
       if (splitType === 'equal') {
-        const numAmount = Number(amount) || 0;
         const includedParticipants = newSplits.filter(s => !s.excluded).length;
         if (includedParticipants > 0) {
-          const splitAmount = Number((numAmount / includedParticipants).toFixed(2));
-          newSplits.forEach(split => {
-            if (!split.excluded) {
-              split.amount = splitAmount;
-            }
-          });
+          const splitAmount = Number((Number(amount) / includedParticipants).toFixed(2));
+          return newSplits.map(split => ({
+            ...split,
+            amount: split.excluded ? 0 : splitAmount
+          }));
         }
       }
 
@@ -355,13 +357,13 @@ const ExpenseModal = ({ isOpen, onClose, onSubmit, group, initialExpense }: Expe
                               onClick={() => handleExcludeParticipant(index)}
                               className={`p-2 rounded-lg transition-colors ${
                                 split.excluded 
-                                  ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                                  : 'bg-red-100 text-red-600 hover:bg-red-200'
                               }`}
-                              title={split.excluded ? 'Include in split' : 'Exclude from split'}
+                              title={split.excluded ? 'Add to split' : 'Remove from split'}
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                {split.excluded ? (
+                                {!split.excluded ? (
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 12H6" />
                                 ) : (
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
