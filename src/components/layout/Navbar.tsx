@@ -227,31 +227,26 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100"
+              className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100 relative"
               aria-label="Toggle menu"
             >
-              <svg 
-                className="w-6 h-6" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                {isMobileMenuOpen ? (
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth="2" 
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth="2" 
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
+              <div className="relative w-6 h-6">
+                <span className={`absolute left-0 block w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${
+                  isMobileMenuOpen 
+                    ? 'rotate-45 translate-y-2.5' 
+                    : 'translate-y-1 animate-nudge'
+                }`} />
+                <span className={`absolute left-0 block w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${
+                  isMobileMenuOpen 
+                    ? 'opacity-0' 
+                    : 'translate-y-3'
+                }`} />
+                <span className={`absolute left-0 block w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${
+                  isMobileMenuOpen 
+                    ? '-rotate-45 translate-y-2.5' 
+                    : 'translate-y-5 animate-nudge delay-100'
+                }`} />
+              </div>
             </button>
           </div>
         </div>
@@ -260,14 +255,14 @@ const Navbar = () => {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm animate-fade-in"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Mobile Menu Panel */}
       <div className={`
-        fixed top-16 right-0 bottom-0 w-72 bg-white z-40 transform transition-transform duration-300 ease-in-out md:hidden shadow-xl
+        fixed top-16 right-0 bottom-0 w-72 bg-white z-40 transform transition-all duration-300 ease-in-out md:hidden shadow-xl
         ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
       `}>
         <div className="p-5 space-y-5">
@@ -277,10 +272,10 @@ const Navbar = () => {
             <Link
               href="/"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              className={`block px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                 pathname === '/' 
-                  ? 'text-indigo-600 bg-indigo-50' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'text-indigo-600 bg-indigo-50 scale-[1.02]' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:scale-[0.98]'
               }`}
             >
               Home
@@ -297,7 +292,7 @@ const Navbar = () => {
                 setIsJoinModalOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors flex items-center gap-3 rounded-lg hover:bg-gray-50 border border-gray-200"
+              className="w-full px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 transition-all duration-200 flex items-center gap-3 rounded-lg hover:bg-gray-50 border border-gray-200 active:scale-[0.98]"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -309,7 +304,7 @@ const Navbar = () => {
             {isGroupPage && (
               <button
                 onClick={handleAddExpense}
-                className="w-full px-4 py-3 text-sm font-medium text-indigo-600 transition-colors flex items-center gap-3 rounded-lg hover:bg-indigo-50 border border-indigo-200"
+                className="w-full px-4 py-3 text-sm font-medium text-indigo-600 transition-all duration-200 flex items-center gap-3 rounded-lg hover:bg-indigo-50 border border-indigo-200 active:scale-[0.98]"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -324,7 +319,7 @@ const Navbar = () => {
                 router.push('/new-group');
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full px-4 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-3 rounded-lg shadow-sm"
+              className="w-full px-4 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 flex items-center gap-3 rounded-lg shadow-sm active:scale-[0.98]"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />

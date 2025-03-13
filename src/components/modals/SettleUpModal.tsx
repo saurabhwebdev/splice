@@ -167,13 +167,13 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-3 sm:p-4 md:p-8">
-      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 md:p-8 animate-fade-in">
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto animate-modal-in">
         <div className="flex items-center justify-between mb-4 sm:mb-6 sticky top-0 bg-white z-10 pb-2 border-b border-gray-100">
           <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Settle Up</h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100"
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100"
             disabled={settlements.some(s => s.isSettling)}
           >
             <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,7 +184,7 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
 
         {settlements.length > 0 ? (
           <div className="space-y-4 sm:space-y-6">
-            <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
               <p className="text-xs sm:text-sm text-blue-700">
                 <span className="font-medium block mb-1">About Settling Up</span>
                 &quot;Settling up&quot; means you&apos;re confirming that all debts are cleared between members.
@@ -200,12 +200,12 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
                 return (
                   <div
                     key={index}
-                    className={`p-3 sm:p-4 rounded-lg transition-colors ${
+                    className={`p-3 sm:p-4 rounded-lg transition-all duration-300 ${
                       settlement.isSettled 
-                        ? 'bg-green-50 border border-green-100' 
+                        ? 'bg-green-50 border border-green-100 scale-100' 
                         : settlement.isSettling 
                           ? 'bg-gray-50 animate-pulse border border-gray-100' 
-                          : 'bg-gray-50 border border-gray-100'
+                          : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
@@ -213,26 +213,26 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
                         {/* Mobile view (stacked) */}
                         <div className="flex items-center justify-between sm:hidden">
                           <div className="flex items-center gap-1.5">
-                            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-xs font-medium text-red-600">
+                            <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center text-xs font-medium text-red-600">
                               {fromFirstName[0]}
                             </div>
-                            <span className="font-medium text-red-600 text-xs truncate max-w-[80px]">{fromFirstName}</span>
+                            <span className="font-medium text-red-600 text-sm truncate max-w-[80px]">{fromFirstName}</span>
                           </div>
                           <svg className="w-4 h-4 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                           </svg>
                           <div className="flex items-center gap-1.5">
-                            <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-xs font-medium text-green-600">
+                            <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-xs font-medium text-green-600">
                               {toFirstName[0]}
                             </div>
-                            <span className="font-medium text-green-600 text-xs truncate max-w-[80px]">{toFirstName}</span>
+                            <span className="font-medium text-green-600 text-sm truncate max-w-[80px]">{toFirstName}</span>
                           </div>
                         </div>
                         
                         {/* Desktop view (horizontal) */}
                         <div className="hidden sm:flex items-center gap-2 text-sm">
                           <div className="flex items-center gap-1.5">
-                            <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center text-xs font-medium text-red-600">
+                            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-sm font-medium text-red-600">
                               {settlement.from.split(' ').map(name => name[0]).join('')}
                             </div>
                             <span className="font-medium text-red-600 truncate max-w-[120px]">{settlement.from}</span>
@@ -241,7 +241,7 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                           </svg>
                           <div className="flex items-center gap-1.5">
-                            <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-xs font-medium text-green-600">
+                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-sm font-medium text-green-600">
                               {settlement.to.split(' ').map(name => name[0]).join('')}
                             </div>
                             <span className="font-medium text-green-600 truncate max-w-[120px]">{settlement.to}</span>
@@ -249,7 +249,7 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
                         </div>
                         
                         <div className="mt-2 sm:mt-1 flex items-center">
-                          <div className="px-2 py-1 bg-white rounded-md border border-gray-200 inline-block">
+                          <div className="px-3 py-1.5 bg-white rounded-lg border border-gray-200 inline-block">
                             <span className="text-base sm:text-lg font-semibold text-gray-900">
                               {group.currency} {settlement.amount.toFixed(2)}
                             </span>
@@ -269,10 +269,10 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
                           <button
                             onClick={() => handleSettleUp(settlement, index)}
                             disabled={settlement.isSettling || settlements.some(s => s.isSettling)}
-                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5
+                            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-all duration-300 flex items-center gap-1.5
                               ${settlement.isSettling
                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                                : 'text-white bg-gray-900 hover:bg-gray-800'
+                                : 'text-white bg-gray-900 hover:bg-gray-800 active:scale-95'
                               }`}
                           >
                             {settlement.isSettling ? (
