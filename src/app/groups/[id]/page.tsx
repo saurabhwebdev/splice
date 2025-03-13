@@ -615,39 +615,41 @@ const GroupPage = ({ params }: PageProps) => {
               title="Expenses" 
               subtitle={`${filteredExpenses.length} of ${group.expenses.length} total`}
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-                {/* Filter Controls */}
-                <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setExpenseFilter('all')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      expenseFilter === 'all'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => setExpenseFilter('regular')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      expenseFilter === 'regular'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Regular
-                  </button>
-                  <button
-                    onClick={() => setExpenseFilter('settlements')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      expenseFilter === 'settlements'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Settlements
-                  </button>
+              {/* Filter Controls - Made more mobile friendly */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="flex-1 flex items-center overflow-x-auto no-scrollbar">
+                  <div className="flex items-center bg-gray-100 rounded-lg p-1 min-w-full sm:min-w-0">
+                    <button
+                      onClick={() => setExpenseFilter('all')}
+                      className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap ${
+                        expenseFilter === 'all'
+                          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      All Expenses
+                    </button>
+                    <button
+                      onClick={() => setExpenseFilter('regular')}
+                      className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap ${
+                        expenseFilter === 'regular'
+                          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Regular Expenses
+                    </button>
+                    <button
+                      onClick={() => setExpenseFilter('settlements')}
+                      className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap ${
+                        expenseFilter === 'settlements'
+                          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Settlements
+                    </button>
+                  </div>
                 </div>
                 
                 <button
@@ -655,7 +657,7 @@ const GroupPage = ({ params }: PageProps) => {
                     setEditingExpense(null);
                     setIsAddingExpense(true);
                   }}
-                  className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+                  className="sm:w-auto w-full px-4 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -666,7 +668,7 @@ const GroupPage = ({ params }: PageProps) => {
 
               {filteredExpenses.length > 0 ? (
                 <>
-                  <div className="space-y-4">
+                  <div className="space-y-4 sm:space-y-3">
                     {currentExpenses.map((expense) => (
                       <ExpenseCard
                         key={expense.id}
@@ -678,58 +680,98 @@ const GroupPage = ({ params }: PageProps) => {
                     ))}
                   </div>
                   
-                  {/* Pagination */}
+                  {/* Pagination - Enhanced for mobile */}
                   {totalPages > 1 && (
-                    <div className="mt-6 flex items-center justify-between border-t border-gray-800 pt-4">
-                      <button
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
-                          currentPage === 1
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-white hover:bg-gray-800'
-                        }`}
-                      >
-                        Previous
-                      </button>
-                      <div className="flex items-center gap-2">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                          <button
-                            key={number}
-                            onClick={() => paginate(number)}
-                            className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                              currentPage === number
-                                ? 'bg-gray-800 text-white'
-                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                            }`}
-                          >
-                            {number}
-                          </button>
-                        ))}
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-4">
+                      <div className="flex items-center gap-2 order-2 sm:order-1">
+                        <button
+                          onClick={() => paginate(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className={`p-2 rounded-lg transition-colors ${
+                            currentPage === 1
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                          }`}
+                          aria-label="Previous page"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                            <button
+                              key={number}
+                              onClick={() => paginate(number)}
+                              className={`min-w-[2.5rem] h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 ${
+                                currentPage === number
+                                  ? 'bg-gray-900 text-white shadow-sm'
+                                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              }`}
+                            >
+                              {number}
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className={`p-2 rounded-lg transition-colors ${
+                            currentPage === totalPages
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                          }`}
+                          aria-label="Next page"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
                       </div>
-                      <button
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
-                          currentPage === totalPages
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-white hover:bg-gray-800'
-                        }`}
-                      >
-                        Next
-                      </button>
+
+                      <div className="text-sm text-gray-500 order-1 sm:order-2">
+                        Showing {indexOfFirstExpense + 1}-{Math.min(indexOfLastExpense, filteredExpenses.length)} of {filteredExpenses.length}
+                      </div>
                     </div>
                   )}
                 </>
               ) : (
-                <div className="h-64 flex items-center justify-center">
-                  <p className="text-gray-400 font-medium">
+                <div className="py-12 flex flex-col items-center justify-center text-center px-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">
                     {expenseFilter === 'all' 
                       ? 'No expenses yet' 
                       : expenseFilter === 'regular' 
-                        ? 'No regular expenses yet' 
-                        : 'No settlements yet'}
+                        ? 'No regular expenses' 
+                        : 'No settlements'}
+                  </h3>
+                  <p className="text-gray-500 mb-6 max-w-sm">
+                    {expenseFilter === 'all' 
+                      ? 'Start by adding your first expense to this group.' 
+                      : expenseFilter === 'regular' 
+                        ? 'Regular expenses will appear here.' 
+                        : 'Settlement transactions will appear here.'}
                   </p>
+                  {expenseFilter === 'all' && (
+                    <button
+                      onClick={() => {
+                        setEditingExpense(null);
+                        setIsAddingExpense(true);
+                      }}
+                      className="px-5 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add First Expense
+                    </button>
+                  )}
                 </div>
               )}
             </CollapsibleCard>

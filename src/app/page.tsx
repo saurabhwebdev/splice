@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllGroups } from '@/utils/firebase';
+import { getAllGroups, getGroupByAccessCode } from '@/utils/firebase';
 import type { Group } from '@/utils/firebase';
 import Image from 'next/image';
+import JoinGroupModal from '@/components/modals/JoinGroupModal';
 
 const gradientColors = [
   'from-indigo-600 to-blue-700',
@@ -34,6 +35,7 @@ const gradientColors = [
 export default function Home() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -63,6 +65,31 @@ export default function Home() {
 
     fetchGroups();
   }, []);
+
+  const handleJoinGroup = async (accessCode: string) => {
+    try {
+      const group = await getGroupByAccessCode(accessCode);
+      if (!group) {
+        throw new Error('Group not found. Please check the access code and try again.');
+      }
+
+      // Store the group ID in localStorage
+      try {
+        const accessedGroups = JSON.parse(localStorage.getItem('accessedGroups') || '[]');
+        if (!accessedGroups.includes(group.id)) {
+          localStorage.setItem('accessedGroups', JSON.stringify([...accessedGroups, group.id]));
+        }
+      } catch (storageError) {
+        console.error('Error updating localStorage:', storageError);
+        // Continue even if localStorage fails - it's not critical
+      }
+
+      router.push(`/groups/${group.id}`);
+    } catch (error: any) {
+      console.error('Error joining group:', error);
+      throw error;
+    }
+  };
 
   if (loading) {
     return (
@@ -96,15 +123,32 @@ export default function Home() {
               <p className="text-lg text-gray-300 leading-relaxed mb-12">
                 Create groups, track shared expenses, and settle up with your friends. No more awkward money conversations.
               </p>
-              <button
-                onClick={() => router.push('/new-group')}
-                className="group relative px-8 py-4 text-base font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-500 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-gray-900"
-              >
-                Create New Group
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 group-hover:translate-x-1 transition-transform duration-200">
-                  →
-                </span>
-              </button>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <button
+                  onClick={() => router.push('/new-group')}
+                  className="group relative px-8 py-4 text-base font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-500 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-gray-900 flex-1 flex items-center justify-center"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create New Group
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 group-hover:translate-x-1 transition-transform duration-200">
+                    →
+                  </span>
+                </button>
+                
+                <button
+                  onClick={() => setIsJoinModalOpen(true)}
+                  className="group relative px-8 py-4 text-base font-medium text-indigo-600 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-900 flex-1 flex items-center justify-center"
+                >
+                  <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  Join Existing Group
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -178,17 +222,41 @@ export default function Home() {
                 <p className="text-gray-500 mb-8 max-w-sm">
                   Create your first group or join an existing one using an access code
                 </p>
-                <button
-                  onClick={() => router.push('/new-group')}
-                  className="px-6 py-3 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  Create Your First Group
-                </button>
+                
+                {/* Action Buttons for Empty State */}
+                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                  <button
+                    onClick={() => router.push('/new-group')}
+                    className="flex-1 px-6 py-3 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create Group
+                  </button>
+                  
+                  <button
+                    onClick={() => setIsJoinModalOpen(true)}
+                    className="flex-1 px-6 py-3 text-sm font-medium text-gray-900 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    Join Group
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
+      
+      {/* Join Group Modal */}
+      <JoinGroupModal
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
+        onJoin={handleJoinGroup}
+      />
     </main>
   );
 }

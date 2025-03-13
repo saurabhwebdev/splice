@@ -30,46 +30,45 @@ const phrases = [
   'SLICE'    // English - Split
 ];
 
+// Typewriter component for the brand name
 const TypewriterText = () => {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
-  const [displayText, setDisplayText] = useState('');
+  const [currentText, setCurrentText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [typingSpeed, setTypingSpeed] = useState(100); // Faster initial typing speed
+  const [typingSpeed, setTypingSpeed] = useState(150);
 
   useEffect(() => {
-    const currentPhrase = phrases[currentPhraseIndex];
-
-    const timer = setTimeout(() => {
+    const timeout = setTimeout(() => {
+      const currentPhrase = phrases[currentPhraseIndex];
+      
       if (!isDeleting) {
         // Typing
-        if (displayText.length < currentPhrase.length) {
-          setDisplayText(currentPhrase.slice(0, displayText.length + 1));
-          setTypingSpeed(100); // Faster typing
-        } else {
-          // Wait before starting to delete
-          setTypingSpeed(1500); // Shorter pause at full word
+        setCurrentText(currentPhrase.substring(0, currentText.length + 1));
+        setTypingSpeed(150);
+        
+        if (currentText === currentPhrase) {
+          // Pause at the end of typing
+          setTypingSpeed(2000);
           setIsDeleting(true);
         }
       } else {
         // Deleting
-        if (displayText.length > 0) {
-          setDisplayText(currentPhrase.slice(0, displayText.length - 1));
-          setTypingSpeed(50); // Faster deleting
-        } else {
+        setCurrentText(currentPhrase.substring(0, currentText.length - 1));
+        setTypingSpeed(100);
+        
+        if (currentText === '') {
           setIsDeleting(false);
-          setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
-          setTypingSpeed(100);
+          setCurrentPhraseIndex((currentPhraseIndex + 1) % phrases.length);
         }
       }
     }, typingSpeed);
 
-    return () => clearTimeout(timer);
-  }, [displayText, currentPhraseIndex, isDeleting]);
+    return () => clearTimeout(timeout);
+  }, [currentText, currentPhraseIndex, isDeleting, typingSpeed]);
 
   return (
-    <span className="text-xl font-bold text-gray-900 font-mono tracking-wide">
-      {displayText}
-      <span className="animate-blink">|</span>
+    <span className="font-mono text-sm font-medium tracking-wider text-indigo-500">
+      {currentText}<span className="animate-blink">|</span>
     </span>
   );
 };
@@ -80,6 +79,7 @@ const Navbar = () => {
   const isGroupPage = pathname?.startsWith('/groups/') && pathname !== '/groups/new';
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -97,6 +97,20 @@ const Navbar = () => {
       document.body.style.overflow = 'unset';
     };
   }, [isMobileMenuOpen]);
+
+  // Add scroll effect to navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleAddExpense = () => {
     // Dispatch custom event that the group page will listen to
@@ -131,61 +145,89 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur-sm z-50 h-16 border-b border-gray-100">
+      <nav 
+        className={`fixed top-0 inset-x-0 z-50 h-16 transition-all duration-300 ${
+          scrolled 
+            ? 'bg-white/90 backdrop-blur-md shadow-sm' 
+            : 'bg-white/80 backdrop-blur-sm'
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4 h-full">
           <div className="flex items-center justify-between h-full">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <Logo className="w-8 h-8" />
-              <TypewriterText />
+              <div className="relative">
+                <Logo className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-900 leading-none">Hisaab</span>
+                <TypewriterText />
+              </div>
             </Link>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-3">
-              {/* Join Group Button */}
-              <button
-                onClick={() => setIsJoinModalOpen(true)}
-                className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-                Join Group
-              </button>
+            <div className="hidden md:flex items-center gap-2">
+              {/* Navigation Links */}
+              <div className="mr-4 flex items-center space-x-1">
+                <Link 
+                  href="/" 
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    pathname === '/' 
+                      ? 'text-indigo-600 bg-indigo-50' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  Home
+                </Link>
+              </div>
 
-              {/* Add Expense Button - Only show on group pages */}
-              {isGroupPage && (
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                {/* Join Group Button */}
                 <button
-                  onClick={handleAddExpense}
-                  className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
+                  onClick={() => setIsJoinModalOpen(true)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-200 rounded-full hover:border-gray-300 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  Join
+                </button>
+
+                {/* Add Expense Button - Only show on group pages */}
+                {isGroupPage && (
+                  <button
+                    onClick={handleAddExpense}
+                    className="px-4 py-2 text-sm font-medium text-indigo-600 border border-indigo-200 rounded-full hover:bg-indigo-50 hover:border-indigo-300 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Expense
+                  </button>
+                )}
+                
+                {/* New Group Button */}
+                <button
+                  onClick={() => router.push('/new-group')}
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-sm"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                   </svg>
-                  Add Expense
+                  New Group
                 </button>
-              )}
-              
-              {/* New Group Button */}
-              <button
-                onClick={() => router.push('/new-group')}
-                className={`px-5 py-2.5 text-sm font-medium transition-colors flex items-center gap-2 ${
-                  isGroupPage 
-                    ? 'text-gray-600 hover:text-gray-900'
-                    : 'text-white bg-gray-900 rounded-full hover:bg-gray-800'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                </svg>
-                New Group
-              </button>
+              </div>
             </div>
 
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100"
               aria-label="Toggle menu"
             >
               <svg 
@@ -218,57 +260,89 @@ const Navbar = () => {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Mobile Menu Panel */}
       <div className={`
-        fixed top-16 right-0 bottom-0 w-64 bg-white z-40 transform transition-transform duration-300 ease-in-out md:hidden
+        fixed top-16 right-0 bottom-0 w-72 bg-white z-40 transform transition-transform duration-300 ease-in-out md:hidden shadow-xl
         ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
       `}>
-        <div className="p-4 space-y-4">
-          {/* Join Group Button */}
-          <button
-            onClick={() => {
-              setIsJoinModalOpen(true);
-              setIsMobileMenuOpen(false);
-            }}
-            className="w-full px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-3 rounded-lg hover:bg-gray-50"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            Join Group
-          </button>
+        <div className="p-5 space-y-5">
+          {/* Navigation Links */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Navigation</h3>
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                pathname === '/' 
+                  ? 'text-indigo-600 bg-indigo-50' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              Home
+            </Link>
+          </div>
 
-          {/* Add Expense Button - Only show on group pages */}
-          {isGroupPage && (
+          {/* Actions */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</h3>
+            
+            {/* Join Group Button */}
             <button
-              onClick={handleAddExpense}
-              className="w-full px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-3 rounded-lg hover:bg-gray-50"
+              onClick={() => {
+                setIsJoinModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors flex items-center gap-3 rounded-lg hover:bg-gray-50 border border-gray-200"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Join Existing Group
+            </button>
+
+            {/* Add Expense Button - Only show on group pages */}
+            {isGroupPage && (
+              <button
+                onClick={handleAddExpense}
+                className="w-full px-4 py-3 text-sm font-medium text-indigo-600 transition-colors flex items-center gap-3 rounded-lg hover:bg-indigo-50 border border-indigo-200"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add New Expense
+              </button>
+            )}
+            
+            {/* New Group Button */}
+            <button
+              onClick={() => {
+                router.push('/new-group');
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full px-4 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-3 rounded-lg shadow-sm"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
-              Add Expense
+              Create New Group
             </button>
-          )}
-          
-          {/* New Group Button */}
-          <button
-            onClick={() => {
-              router.push('/new-group');
-              setIsMobileMenuOpen(false);
-            }}
-            className="w-full px-4 py-3 text-sm font-medium text-gray-900 transition-colors flex items-center gap-3 rounded-lg bg-gray-100 hover:bg-gray-200"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            New Group
-          </button>
+          </div>
+
+          {/* Footer */}
+          <div className="pt-5 mt-5 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Logo className="w-5 h-5" />
+                <span className="text-sm font-medium text-gray-700">Hisaab</span>
+              </div>
+              <span className="text-xs text-gray-500">Split expenses easily</span>
+            </div>
+          </div>
         </div>
       </div>
 
