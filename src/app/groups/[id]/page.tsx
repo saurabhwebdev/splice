@@ -548,22 +548,22 @@ const GroupPage = ({ params }: PageProps) => {
             title="Quick Settings" 
             defaultExpanded={false}
           >
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Currency Setting */}
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-600">
+              <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-gray-900 shadow-sm flex items-center justify-center text-white">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Currency
                   </label>
                   <select
                     value={group.currency}
                     onChange={(e) => handleCurrencyChange(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 text-gray-900 text-sm transition-shadow"
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm transition-all"
                   >
                     {currencies.map((curr) => (
                       <option key={curr.code} value={curr.code}>
@@ -575,30 +575,27 @@ const GroupPage = ({ params }: PageProps) => {
               </div>
               
               {/* Access Code Setting */}
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-600">
+              <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-gray-900 shadow-sm flex items-center justify-center text-white">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Access Code
                   </label>
                   <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={group.accessCode}
-                      readOnly
-                      className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 font-mono text-sm"
-                    />
+                    <code className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-900">
+                      {group.accessCode}
+                    </code>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(group.accessCode);
                         // You could add a toast notification here
                       }}
-                      className="p-2 text-gray-600 hover:text-gray-900 bg-white border border-gray-200 rounded-lg transition-colors hover:bg-gray-50"
-                      aria-label="Copy access code"
+                      className="p-2 text-gray-500 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100"
+                      title="Copy access code"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
@@ -608,30 +605,93 @@ const GroupPage = ({ params }: PageProps) => {
                 </div>
               </div>
 
-              {/* Delete Group Option */}
-              <div className="flex items-center gap-4 p-4 bg-red-50 rounded-xl border border-red-100">
-                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-red-600">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Delete Group Button */}
+              <button
+                onClick={handleDeleteGroup}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-red-600 hover:text-white hover:bg-red-600 rounded-xl transition-all duration-300 border border-red-200 hover:border-red-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete Group
+              </button>
+            </div>
+          </CollapsibleCard>
+        </div>
+
+        {/* Desktop Settings Card */}
+        <div className="hidden md:block mb-8">
+          <CollapsibleCard title="Settings">
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Currency Setting */}
+                <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-gray-900 shadow-sm flex items-center justify-center text-white">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Currency
+                    </label>
+                    <select
+                      value={group.currency}
+                      onChange={(e) => handleCurrencyChange(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm transition-all"
+                    >
+                      {currencies.map((curr) => (
+                        <option key={curr.code} value={curr.code}>
+                          {curr.code} ({curr.symbol})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Access Code Setting */}
+                <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-gray-900 shadow-sm flex items-center justify-center text-white">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Access Code
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-900">
+                        {group.accessCode}
+                      </code>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(group.accessCode);
+                          // You could add a toast notification here
+                        }}
+                        className="p-2 text-gray-500 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100"
+                        title="Copy access code"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Delete Group Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleDeleteGroup}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-300 border border-red-200 hover:border-red-600"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium text-red-900 mb-1">
-                    Delete Group
-                  </h4>
-                  <p className="text-xs text-red-700 mb-3">
-                    This action cannot be undone. All expenses and member data will be permanently deleted.
-                  </p>
-                  <button
-                    onClick={handleDeleteGroup}
-                    className="w-full px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete Group
-                  </button>
-                </div>
+                  Delete Group
+                </button>
               </div>
             </div>
           </CollapsibleCard>
@@ -809,82 +869,6 @@ const GroupPage = ({ params }: PageProps) => {
 
           {/* Sidebar Column */}
           <div className="space-y-6 md:space-y-8">
-            {/* Settings Card - Hidden on mobile */}
-            <div className="hidden md:block">
-              <CollapsibleCard title="Settings">
-                <div className="space-y-4">
-                  {/* Delete Group Button */}
-                  <div className="flex justify-end">
-                    <button
-                      onClick={handleDeleteGroup}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-white hover:bg-red-600 rounded-md transition-colors border border-red-200 hover:border-red-600"
-                      title="Delete Group"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete Group
-                    </button>
-                  </div>
-                  
-                  {/* Currency Setting */}
-                  <div className="flex items-center gap-3 py-2 border-b border-gray-100">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">
-                        Currency
-                      </label>
-                      <select
-                        value={group.currency}
-                        onChange={(e) => handleCurrencyChange(e.target.value)}
-                        className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-200 text-gray-900 text-sm"
-                      >
-                        {currencies.map((curr) => (
-                          <option key={curr.code} value={curr.code}>
-                            {curr.code} ({curr.symbol})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  
-                  {/* Access Code Setting */}
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">
-                        Access Code
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={group.accessCode}
-                          readOnly
-                          className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-gray-900 font-mono text-sm"
-                        />
-                        <button
-                          onClick={() => navigator.clipboard.writeText(group.accessCode)}
-                          className="p-1.5 text-gray-500 hover:text-gray-900 transition-colors"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleCard>
-            </div>
-
             {/* Participants Card */}
             <CollapsibleCard 
               title="Participants" 

@@ -245,35 +245,42 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
                                 : 'bg-white border border-gray-200'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-6">
-                              {/* From Person */}
-                              <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-sm font-medium text-red-600">
-                                  {fromFirstName.substring(0, 2).toUpperCase()}
-                                </div>
-                                <span className="font-medium text-red-600">
-                                  {fromFirstName}
-                                </span>
+                          {/* Names and Avatars */}
+                          <div className="flex items-center gap-6">
+                            {/* From Person */}
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-sm font-medium text-red-600">
+                                {fromFirstName.substring(0, 2).toUpperCase()}
                               </div>
-
-                              {/* Arrow */}
-                              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                              </svg>
-
-                              {/* To Person */}
-                              <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-sm font-medium text-green-600">
-                                  {toFirstName.substring(0, 2).toUpperCase()}
-                                </div>
-                                <span className="font-medium text-green-600">
-                                  {toFirstName}
-                                </span>
-                              </div>
+                              <span className="font-medium text-red-600">
+                                {fromFirstName}
+                              </span>
                             </div>
 
-                            {/* Settle Up Button */}
+                            {/* Arrow */}
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+
+                            {/* To Person */}
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-sm font-medium text-green-600">
+                                {toFirstName.substring(0, 2).toUpperCase()}
+                              </div>
+                              <span className="font-medium text-green-600">
+                                {toFirstName}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Amount and Settle Up Button */}
+                          <div className="mt-3 flex items-center justify-between">
+                            <div className="inline-flex px-3 py-1.5 bg-white rounded-lg border border-gray-200">
+                              <span className="text-base font-semibold text-gray-900">
+                                {group.currency} {settlement.amount.toFixed(2)}
+                              </span>
+                            </div>
+
                             {settlement.isSettled ? (
                               <div className="px-3 py-1.5 text-sm font-medium text-green-600 bg-green-100 rounded-lg flex items-center gap-1.5">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,15 +316,6 @@ const SettleUpModal = ({ isOpen, onClose, group, onSettle }: SettleUpModalProps)
                                 )}
                               </button>
                             )}
-                          </div>
-
-                          {/* Amount */}
-                          <div className="mt-3">
-                            <div className="inline-flex px-3 py-1.5 bg-white rounded-lg border border-gray-200">
-                              <span className="text-base font-semibold text-gray-900">
-                                {group.currency} {settlement.amount.toFixed(2)}
-                              </span>
-                            </div>
                           </div>
                         </motion.div>
                       );
